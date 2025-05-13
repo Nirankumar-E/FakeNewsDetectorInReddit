@@ -17,20 +17,70 @@ def extract_details(title):
 # Enhanced function to compare title details with scraped news
 def compare_with_scraped_news(title, scraped_news):
     title_numbers, title_keywords = extract_details(title)
-    for news in scraped_news:
+    numbers_match_results = []  # List to track numbers match results
+    keyword_match_ratios = []  # List to track keyword match ratios
+
+    for idx, news in enumerate(scraped_news):
         news_content = news['content']
-        relevant_context = re.findall(r'(\d+)\s+(killed|dead|injured|victims|casualties)', news_content, re.IGNORECASE)
-        content_numbers = [match[0] for match in relevant_context]
-        numbers_match = all(number in content_numbers for number in title_numbers)
-        matched_keywords = [keyword for keyword in title_keywords if keyword in news_content]
+
+        # Truncate content from the point where "also read" appears
+        if "also read" in news_content.lower():
+            news_content = news_content[:news_content.lower().find("also read")]
+            print(f"[DEBUG] Truncated content at 'also read' for article {idx + 1}/{len(scraped_news)}")
+
+        # Skip articles with content length greater than 2000 words
+        if len(news_content.split()) > 2000:
+            print(f"[DEBUG] Skipping article {idx + 1}/{len(scraped_news)} due to content length: {len(news_content.split())} words")
+            continue
+
+        # Debugging output for each article
+        print(f"\n[DEBUG] Processing article {idx + 1}/{len(scraped_news)}")
+        print(f"Full content length: {len(news_content.split())} words")
+        print(f"Full content preview: {news_content[:500]}...")  # Print the first 500 characters for preview
+
+        # Extract all numbers from content
+        content_numbers = re.findall(r'\d+', news_content)
+
+        # Filter out numbers that are unrelated (e.g., years or unrelated incidents)
+        filtered_numbers = [num for num in content_numbers if len(num) < 4 or int(num) < 2100]
+        print(f"Filtered content numbers: {filtered_numbers}")
+
+        # Debugging output for extracted numbers
+        print(f"Title numbers: {title_numbers}")
+        print(f"Content numbers: {filtered_numbers}")
+
+        # Compare numbers and keywords
+        numbers_match = all(number in filtered_numbers for number in title_numbers)
+        matched_keywords = [keyword for keyword in title_keywords if keyword in news_content.lower()]
         keyword_match_ratio = len(matched_keywords) / len(title_keywords) if title_keywords else 0
-        if not numbers_match:
-            return False
-        if keyword_match_ratio > 0.7 and numbers_match:
-            return "REAL"
-        elif keyword_match_ratio > 0.6 and not content_numbers:
-            return "MAY BE TRUE"
-    return "FAKE"
+
+        # Append results to tracking lists
+        numbers_match_results.append(numbers_match)
+        keyword_match_ratios.append(keyword_match_ratio)
+
+        # Debugging output for matching results
+        print(f"Numbers match: {numbers_match}")
+        print(f"Keyword match ratio: {keyword_match_ratio}")
+
+    # Analyze results after processing all articles
+    true_count = numbers_match_results.count(True)
+    false_count = numbers_match_results.count(False)
+    max_keyword_match_ratio = max(keyword_match_ratios) if keyword_match_ratios else 0
+
+    print(f"\n[DEBUG] Numbers match results: {numbers_match_results}")
+    print(f"[DEBUG] True count: {true_count}, False count: {false_count}")
+    print(f"[DEBUG] Max keyword match ratio: {max_keyword_match_ratio}")
+
+    # Decision logic based on majority and keyword match ratio
+    if false_count > true_count:
+        print("[DEBUG] Majority of numbers match results are False. Returning FAKE.")
+        return False
+    elif true_count > false_count and max_keyword_match_ratio > 0.6:
+        print("[DEBUG] Majority of numbers match results are True and keyword match ratio is above 0.6. Returning REAL.")
+        return "REAL"
+    else:
+        print("[DEBUG] No strong majority or insufficient keyword match ratio. Returning FAKE.")
+        return "FAKE"
 
 # Main logic to handle command-line input
 if __name__ == "__main__":
