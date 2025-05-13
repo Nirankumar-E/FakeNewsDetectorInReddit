@@ -11,7 +11,7 @@ def scrape_latest_news(query, max_results=5):
             for result in results:
                 url = result.get('href') or result.get('url')
                 if url:
-                    print(f"Found URL: {url}")
+                    # print(f"Found URL: {url}")
                     # Step 2: Parse the article
                     article_data = parse_news_content(url)
                     if article_data:
@@ -24,9 +24,10 @@ def scrape_latest_news(query, max_results=5):
 
 def parse_news_content(url):
     try:
-        # Configure custom headers
+        # Configure custom headers and timeout
         config = Configuration()
         config.browser_user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        config.request_timeout = 15  # Increase timeout to 15 seconds
         
         # Initialize the Article object with the URL and custom configuration
         article = Article(url, config=config)
