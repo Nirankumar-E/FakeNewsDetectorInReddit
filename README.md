@@ -1,115 +1,63 @@
+# FakeNewsDetectorInReddit
 
+## Overview
 
-# Fake News Detector with Reddit Verification
-
-This Python-based project combines machine learning and Reddit search to help detect fake news headlines. It classifies a given news headline as **REAL** or **FAKE** using a trained logistic regression model, and also checks Reddit for related discussions to support the result.
+**FakeNewsDetectorInReddit** is a web-based tool for verifying the authenticity of news-related Reddit posts. It uses machine learning and real-time news scraping to compare Reddit titles with actual news articles, helping to identify potentially fake or misleading information.
 
 ## Features
 
-* **Text Classification** using TF-IDF + Logistic Regression
-* **Reddit Verification** using PRAW (Reddit API)
-* **Command-Line Interface** for interactive usage
-* **Cleans Text** using NLTK and regex-based preprocessing
-* **Model Evaluation** with classification metrics and ROC-AUC
-
-## Demo
-
-```bash
-> python fake_news_detector.py
-
-Enter a news headline (or type 'exit'):
-> New study reveals unexpected effects of vitamin D
-```
+- Web UI (`index.php`) for easy user interaction.
+- Extracts numbers and keywords from Reddit post titles.
+- Scrapes real-time news articles from the web for comparison.
+- Compares title details (numbers and keywords) with news content.
+- Skips unrelated or excessively long news articles.
+- Ignores content after "also read" sections in news articles.
+- Uses a trained machine learning model (TF-IDF + classifier) for additional prediction.
+- Provides clear output: `REAL`, `FAKE`, or `MAY BE TRUE`.
 
 ## How It Works
 
-1. Cleans the input text (removes links, punctuation, stopwords).
-2. Classifies the cleaned headline using a trained logistic regression model.
-3. Queries Reddit to find similar headlines (cross-referencing).
-4. Returns:
+1. **Input**: Enter a Reddit post title or URL via the web UI.
+2. **Scraping**: The tool scrapes the latest news articles related to the title.
+3. **Comparison**: It compares numbers and keywords from the title with those in the news articles, skipping content after "also read" and ignoring articles longer than 2000 words.
+4. **Prediction**: Based on the comparison and the ML model, it outputs whether the news is likely `REAL`, `FAKE`, or `MAY BE TRUE`.
 
-   * **ML Prediction:** REAL or FAKE with confidence score
-   * **Reddit Posts:** If related headlines are found, increases credibility
+## Usage
 
-## Setup Instructions
+- Open `index.php` in your browser (ensure your PHP server is running).
+- Enter the Reddit post title or URL and submit to get the result.
 
-### 1. Clone the Repository
+## Project Structure
 
-```bash
-git clone https://github.com/your-username/fake-news-detector.git
-cd fake-news-detector
-```
+- `index.php` - Web UI for user input and result display.
+- `detector.py` - Main script for running the detector.
+- `webscrapper.py` - Contains functions for scraping news articles.
+- `fake_news_model.pkl` - Pre-trained machine learning model.
+- `tfidf_vectorizer.pkl` - Pre-trained TF-IDF vectorizer.
+- `README.md` - Project documentation.
 
-### 2. Install Dependencies
+## Requirements
 
-```bash
-pip install -r requirements.txt
-```
+- Python 3.x
+- PHP (for the web UI)
+- `joblib`
+- `requests`
+- `beautifulsoup4`
+- Any other dependencies listed in your environment or requirements file.
 
-Required packages:
+## How to Train Your Own Model
 
-* pandas
-* scikit-learn
-* nltk
-* praw
-* torch (if used with future ML models)
+If you want to retrain the model:
+1. Collect a dataset of real and fake news.
+2. Train a TF-IDF vectorizer and a classifier (e.g., Logistic Regression).
+3. Save the model and vectorizer as `.pkl` files using `joblib`.
 
-### 3. Prepare Dataset
+## Notes
 
-Ensure your dataset is named `XY_train.csv` and placed inside a folder called `datas/`.
-
-* Format:
-
-  * `text`: the news headline/content
-  * `label`: 0 for REAL, 1 for FAKE, 2 for noise (optional, filtered out in training)
-
-### 4. Configure Reddit API
-
-Create a Reddit App at [reddit.com/prefs/apps](https://www.reddit.com/prefs/apps) and update the credentials in the script:
-
-```python
-reddit = praw.Reddit(
-    client_id='YOUR_CLIENT_ID',
-    client_secret='YOUR_SECRET',
-    user_agent='fake-news-detector/1.0'
-)
-```
-
-### 5. Run the Program
-
-```bash
-python fake_news_detector.py
-```
-
-## File Structure
-
-```
-fake-news-detector/
-│
-├── datas/
-│   └── XY_train.csv            # Dataset
-├── fake_news_detector.py       # Main program
-├── README.md                   # Project documentation
-└── requirements.txt            # Dependencies
-```
-
-## Model Details
-
-* **Text Representation:** TF-IDF (1–2 grams, top 5000 features)
-* **Classifier:** Logistic Regression
-* **Evaluation:** Classification report + ROC-AUC
+- The tool is designed for educational and research purposes.
+- The accuracy depends on the quality of the scraped news and the trained model.
+- Always verify critical information from trusted sources.
 
 ## License
 
-This project is licensed under the MIT License.
-
-## Acknowledgements
-
-* [NLTK](https://www.nltk.org/)
-* [Scikit-learn](https://scikit-learn.org/)
-* [PRAW (Python Reddit API Wrapper)](https://praw.readthedocs.io/)
-* [Reddit](https://www.reddit.com/)
-
----
-
-Let me know if you'd like help creating a `requirements.txt` or Dockerizing the project.
+MIT License (or your chosen license)
